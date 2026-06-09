@@ -119,7 +119,9 @@ export function HeroSection() {
           opacity: visible ? 1 : 0,
           transform: visible ? "none" : "translateX(24px)",
           transition: "opacity 0.75s ease 0.85s, transform 0.75s ease 0.85s",
-        }}>
+        }}
+        className="hero-stats"
+        >
           {[
             { value: "500+", label: "Products" },
             { value: "2000+", label: "Happy Clients" },
@@ -161,7 +163,7 @@ export function HeroSection() {
           50% { transform: translateX(-50%) translateY(7px); }
         }
         @media (max-width: 768px) {
-          #home > div > div:nth-child(3) > div:last-child { display: none !important; }
+          .hero-stats { display: none !important; }
         }
       `}</style>
     </section>
