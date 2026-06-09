@@ -52,6 +52,7 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
     >
       <div
         onClick={e => e.stopPropagation()}
+        className="modal-inner"
         style={{
           background: "#fff", borderRadius: 20, overflow: "hidden",
           maxWidth: 860, width: "100%", maxHeight: "90vh",
@@ -171,7 +172,9 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
           to { opacity: 1; transform: scale(1) translateY(0); }
         }
         @media (max-width: 640px) {
-          .modal-inner { flex-direction: column !important; }
+          .modal-inner { flex-direction: column !important; max-height: 95vh !important; }
+          .modal-inner > div:first-child { flex: 0 0 220px !important; min-height: 220px !important; }
+          .modal-inner > div:last-child { padding: 20px 18px !important; }
         }
       `}</style>
     </div>
