@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../../firebase/config";
 import { ProductCard, type Product } from "./ProductCard";
 import { Search, SlidersHorizontal } from "lucide-react";
@@ -7,7 +7,7 @@ import { useReveal } from "./useReveal";
 
 const STATIC_PRODUCTS: Product[] = [];
 
-const CATEGORIES = ["All", "Living Room", "Bedroom", "Dining", "Office", "Other"];
+const CATEGORIES = ["All", "Living Room", "Bedroom", "Dining", "Office", "Outdoor", "Other"];
 
 export function ProductsSection() {
   const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
@@ -105,8 +105,8 @@ export function ProductsSection() {
                 fontFamily: "'Outfit', sans-serif", minWidth: 200,
                 transition: "border-color 0.2s, box-shadow 0.2s",
               }}
-              onFocus={e => { e.target.style.borderColor = "#1b3a6b"; e.target.style.boxShadow = "0 0 0 3px rgba(27,58,107,0.07)"; }}
-              onBlur={e => { e.target.style.borderColor = "rgba(27,58,107,0.14)"; e.target.style.boxShadow = "none"; }}
+              onFocus={(e) => { e.target.style.borderColor = "#1b3a6b"; e.target.style.boxShadow = "0 0 0 3px rgba(27,58,107,0.07)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "rgba(27,58,107,0.14)"; e.target.style.boxShadow = "none"; }}
             />
           </div>
         </div>
@@ -125,6 +125,7 @@ export function ProductsSection() {
         ) : (
           <div
             ref={gridRef as React.RefObject<HTMLDivElement>}
+            className="products-grid"
             style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 28 }}
           >
             {filtered.map((product, i) => (
@@ -142,6 +143,14 @@ export function ProductsSection() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Mobile: 2-column equal grid */
+        @media (max-width: 640px) {
+          .products-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+          }
+        }
       `}</style>
     </section>
   );
