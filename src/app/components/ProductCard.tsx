@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageCircle, Tag, Package, X, ChevronRight } from "lucide-react";
+import { MessageCircle, Tag, Package, X, ChevronRight, ChevronLeft } from "lucide-react";
 
 export interface Product {
   id: string;
@@ -8,6 +8,7 @@ export interface Product {
   price: number;
   category: string;
   imageUrl: string;
+  imageUrls?: string[]; // multiple images
   inStock: boolean;
   featured?: boolean;
 }
@@ -23,11 +24,107 @@ const categoryColors: Record<string, string> = {
   "Bedroom": "#2d5aa8",
   "Dining": "#1b3a6b",
   "Office": "#2d5aa8",
+  "Outdoor": "#2d7a4a",
   "Other": "#64748b",
 };
 
+// Helper: get all images for a product (imageUrls array takes priority, falls back to imageUrl)
+function getImages(product: Product): string[] {
+  if (product.imageUrls && product.imageUrls.length > 0) return product.imageUrls;
+  if (product.imageUrl) return [product.imageUrl];
+  return [];
+}
+
+function ImageCarousel({ images, alt, compact = false }: { images: string[]; alt: string; compact?: boolean }) {
+  const [current, setCurrent] = useState(0);
+  const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
+
+  const prev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrent((c) => (c - 1 + images.length) % images.length);
+  };
+  const next = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrent((c) => (c + 1) % images.length);
+  };
+
+  if (images.length === 0 || imgErrors[0]) {
+    return (
+      <div style={{
+        width: "100%", height: "100%", position: "absolute", inset: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "linear-gradient(135deg, #eff4ff, #dce8ff)",
+      }}>
+        <Package size={compact ? 32 : 48} color="rgba(27,58,107,0.3)" />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "absolute", inset: 0 }}>
+      {/* Current image */}
+      <img
+        src={images[current]}
+        alt={alt}
+        onError={() => setImgErrors((e) => ({ ...e, [current]: true }))}
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "opacity 0.25s" }}
+      />
+
+      {/* Arrows — only if multiple images */}
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            style={{
+              position: "absolute", left: compact ? 4 : 8, top: "50%", transform: "translateY(-50%)",
+              width: compact ? 22 : 30, height: compact ? 22 : 30, borderRadius: "50%",
+              background: "rgba(0,0,0,0.45)", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff", zIndex: 2,
+            }}
+          >
+            <ChevronLeft size={compact ? 12 : 16} />
+          </button>
+          <button
+            onClick={next}
+            style={{
+              position: "absolute", right: compact ? 4 : 8, top: "50%", transform: "translateY(-50%)",
+              width: compact ? 22 : 30, height: compact ? 22 : 30, borderRadius: "50%",
+              background: "rgba(0,0,0,0.45)", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff", zIndex: 2,
+            }}
+          >
+            <ChevronRight size={compact ? 12 : 16} />
+          </button>
+
+          {/* Dots */}
+          <div style={{
+            position: "absolute", bottom: compact ? 6 : 10, left: "50%", transform: "translateX(-50%)",
+            display: "flex", gap: compact ? 4 : 5, zIndex: 2,
+          }}>
+            {images.map((_, i) => (
+              <div
+                key={i}
+                onClick={(e) => { e.stopPropagation(); setCurrent(i); }}
+                style={{
+                  width: compact ? 5 : 7, height: compact ? 5 : 7, borderRadius: "50%",
+                  background: i === current ? "#fff" : "rgba(255,255,255,0.5)",
+                  cursor: "pointer", transition: "background 0.2s",
+                }}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function ProductModal({ product, onClose }: { product: Product; onClose: () => void }) {
-  const [imgError, setImgError] = useState(false);
+  const images = getImages(product);
+  const [current, setCurrent] = useState(0);
+  const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(
@@ -51,8 +148,7 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
       }}
     >
       <div
-        onClick={e => e.stopPropagation()}
-        className="modal-inner"
+        onClick={(e) => e.stopPropagation()}
         style={{
           background: "#fff", borderRadius: 20, overflow: "hidden",
           maxWidth: 860, width: "100%", maxHeight: "90vh",
@@ -60,45 +156,102 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
           boxShadow: "0 32px 80px rgba(0,0,0,0.25)",
           animation: "modalIn 0.25s ease",
         }}
+        className="modal-inner"
       >
-        {/* Left — Image */}
-        <div style={{ flex: "0 0 50%", position: "relative", background: "#f4f6fb", minHeight: 400 }}>
-          {!imgError && product.imageUrl ? (
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              onError={() => setImgError(true)}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            />
-          ) : (
+        {/* Left — Image gallery */}
+        <div style={{ flex: "0 0 50%", position: "relative", background: "#f4f6fb", minHeight: 400, display: "flex", flexDirection: "column" }}>
+          {/* Main image */}
+          <div style={{ flex: 1, position: "relative", minHeight: 300 }}>
+            {images.length > 0 && !imgErrors[current] ? (
+              <img
+                key={current}
+                src={images[current]}
+                alt={product.name}
+                onError={() => setImgErrors((e) => ({ ...e, [current]: true }))}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", animation: "fadeImg 0.2s ease" }}
+              />
+            ) : (
+              <div style={{
+                width: "100%", height: "100%", minHeight: 300,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "linear-gradient(135deg, #eff4ff, #dce8ff)",
+              }}>
+                <Package size={72} color="rgba(27,58,107,0.2)" />
+              </div>
+            )}
+
+            {/* Nav arrows */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCurrent((c) => (c - 1 + images.length) % images.length)}
+                  style={{
+                    position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
+                    width: 34, height: 34, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.45)", border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", zIndex: 2,
+                  }}
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  onClick={() => setCurrent((c) => (c + 1) % images.length)}
+                  style={{
+                    position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
+                    width: 34, height: 34, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.45)", border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", zIndex: 2,
+                  }}
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </>
+            )}
+
+            {/* Badges */}
             <div style={{
-              width: "100%", height: "100%", minHeight: 400,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              background: "linear-gradient(135deg, #eff4ff, #dce8ff)",
+              position: "absolute", top: 14, left: 14,
+              background: categoryColors[product.category] || "#1b3a6b",
+              color: "#fff", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 600,
             }}>
-              <Package size={72} color="rgba(27,58,107,0.2)" />
+              {product.category}
+            </div>
+            <div style={{
+              position: "absolute", top: 14, right: 14,
+              background: product.inStock ? "rgba(34,197,94,0.9)" : "rgba(239,68,68,0.9)",
+              color: "#fff", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 600,
+            }}>
+              {product.inStock ? "In Stock" : "Out of Stock"}
+            </div>
+          </div>
+
+          {/* Thumbnail strip */}
+          {images.length > 1 && (
+            <div style={{
+              display: "flex", gap: 6, padding: "10px 12px",
+              background: "#f0f4fa", overflowX: "auto", flexShrink: 0,
+            }}>
+              {images.map((url, i) => (
+                <div
+                  key={i}
+                  onClick={() => setCurrent(i)}
+                  style={{
+                    width: 52, height: 42, borderRadius: 7, overflow: "hidden", flexShrink: 0,
+                    cursor: "pointer", border: i === current ? "2px solid #1b3a6b" : "2px solid transparent",
+                    opacity: i === current ? 1 : 0.6, transition: "all 0.18s",
+                  }}
+                >
+                  <img src={url} alt={`View ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                </div>
+              ))}
             </div>
           )}
-          {/* Badges */}
-          <div style={{
-            position: "absolute", top: 14, left: 14,
-            background: categoryColors[product.category] || "#1b3a6b",
-            color: "#fff", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 600,
-          }}>
-            {product.category}
-          </div>
-          <div style={{
-            position: "absolute", top: 14, right: 14,
-            background: product.inStock ? "rgba(34,197,94,0.9)" : "rgba(239,68,68,0.9)",
-            color: "#fff", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 600,
-          }}>
-            {product.inStock ? "In Stock" : "Out of Stock"}
-          </div>
         </div>
 
         {/* Right — Details */}
         <div style={{ flex: 1, padding: "36px 32px", display: "flex", flexDirection: "column", overflowY: "auto" }}>
-          {/* Close button */}
           <button onClick={onClose} style={{
             alignSelf: "flex-end", background: "#f1f5f9", border: "none",
             borderRadius: "50%", width: 36, height: 36, cursor: "pointer",
@@ -148,19 +301,20 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
               onClick={handleWhatsApp}
               disabled={!product.inStock}
               style={{
-                width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
                 background: product.inStock ? "#25D366" : "#94a3b8",
                 color: "#fff", border: "none", cursor: product.inStock ? "pointer" : "not-allowed",
-                padding: "16px 24px", borderRadius: 100,
+                padding: "15px 24px", borderRadius: 12,
                 fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif",
                 boxShadow: product.inStock ? "0 4px 16px rgba(37,211,102,0.4)" : "none",
                 transition: "all 0.2s",
               }}
-              onMouseEnter={e => { if (product.inStock) { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.background = "#20c45e"; }}}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "none"; (e.currentTarget as HTMLButtonElement).style.background = product.inStock ? "#25D366" : "#94a3b8"; }}
+              onMouseEnter={(e) => { if (product.inStock) (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "none"; }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              <MessageCircle size={20} />
               Order via WhatsApp
+              <ChevronRight size={18} />
             </button>
           </div>
         </div>
@@ -170,10 +324,12 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
           from { opacity: 0; transform: scale(0.95) translateY(10px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
         }
+        @keyframes fadeImg {
+          from { opacity: 0.6; } to { opacity: 1; }
+        }
         @media (max-width: 640px) {
-          .modal-inner { flex-direction: column !important; max-height: 95vh !important; }
-          .modal-inner > div:first-child { flex: 0 0 220px !important; min-height: 220px !important; }
-          .modal-inner > div:last-child { padding: 20px 18px !important; }
+          .modal-inner { flex-direction: column !important; max-height: 90vh; overflow-y: auto; }
+          .modal-inner > div:first-child { flex: 0 0 auto !important; min-height: 240px !important; }
         }
       `}</style>
     </div>
@@ -181,9 +337,9 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const [imgError, setImgError] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const images = getImages(product);
 
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -205,87 +361,71 @@ export function ProductCard({ product }: ProductCardProps) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background: "#fff", borderRadius: 16, overflow: "hidden", cursor: "pointer",
+          background: "#fff", borderRadius: 14, overflow: "hidden", cursor: "pointer",
           boxShadow: hovered
             ? "0 16px 48px rgba(27,58,107,0.15), 0 0 0 2px rgba(201,160,37,0.3)"
-            : "0 2px 16px rgba(27,58,107,0.08)",
+            : "0 2px 12px rgba(27,58,107,0.08)",
           transition: "all 0.3s ease",
-          transform: hovered ? "translateY(-4px)" : "none",
+          transform: hovered ? "translateY(-3px)" : "none",
           fontFamily: "'Outfit', sans-serif",
           display: "flex", flexDirection: "column",
         }}
       >
         {/* Image */}
-        <div style={{ position: "relative", paddingTop: "66%", background: "#f4f6fb", overflow: "hidden" }}>
-          {!imgError && product.imageUrl ? (
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              onError={() => setImgError(true)}
-              style={{
-                position: "absolute", inset: 0, width: "100%", height: "100%",
-                objectFit: "cover", transition: "transform 0.4s ease",
-                transform: hovered ? "scale(1.05)" : "scale(1)",
-              }}
-            />
-          ) : (
-            <div style={{
-              position: "absolute", inset: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              background: "linear-gradient(135deg, #eff4ff, #dce8ff)",
-            }}>
-              <Package size={48} color="rgba(27,58,107,0.3)" />
-            </div>
-          )}
+        <div style={{ position: "relative", paddingTop: "75%", background: "#f4f6fb", overflow: "hidden" }}>
+          <ImageCarousel images={images} alt={product.name} compact />
+
+          {/* Category badge */}
           <div style={{
-            position: "absolute", top: 12, left: 12,
+            position: "absolute", top: 8, left: 8, zIndex: 3,
             background: categoryColors[product.category] || "#1b3a6b",
-            color: "#fff", borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 600,
+            color: "#fff", borderRadius: 5, padding: "3px 8px", fontSize: 10, fontWeight: 600,
           }}>
             {product.category}
           </div>
+
+          {/* Stock badge */}
           <div style={{
-            position: "absolute", top: 12, right: 12,
+            position: "absolute", top: 8, right: 8, zIndex: 3,
             background: product.inStock ? "rgba(34,197,94,0.9)" : "rgba(239,68,68,0.9)",
-            color: "#fff", borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 600,
+            color: "#fff", borderRadius: 5, padding: "3px 8px", fontSize: 10, fontWeight: 600,
           }}>
             {product.inStock ? "In Stock" : "Out of Stock"}
           </div>
+
+          {/* Gold shimmer on hover */}
           <div style={{
-            position: "absolute", bottom: 0, left: 0, right: 0, height: 3,
+            position: "absolute", bottom: 0, left: 0, right: 0, height: 3, zIndex: 3,
             background: "linear-gradient(90deg, #c9a025, #f0d080, #c9a025)",
             opacity: hovered ? 1 : 0, transition: "opacity 0.3s",
           }} />
         </div>
 
         {/* Content */}
-        <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column" }}>
-          <h3 style={{ fontSize: 17, fontWeight: 700, color: "#1a1a2e", marginBottom: 6, lineHeight: 1.3 }}>
+        <div style={{ padding: "12px 12px 14px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.3, margin: 0 }}>
             {product.name}
           </h3>
-          <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16, flex: 1, lineHeight: 1.5 }}>
-            Click to view details
-          </p>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#1b3a6b" }}>
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: "auto" }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#1b3a6b" }}>
               Rs. {product.price.toLocaleString()}
             </div>
             <button
               onClick={handleWhatsApp}
               disabled={!product.inStock}
-              title="Order via WhatsApp"
               style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                 background: product.inStock ? "#25D366" : "#94a3b8",
                 color: "#fff", border: "none", cursor: product.inStock ? "pointer" : "not-allowed",
-                width: 48, height: 48, borderRadius: "50%",
-                transition: "all 0.2s", flexShrink: 0,
-                boxShadow: product.inStock ? "0 4px 12px rgba(37,211,102,0.35)" : "none",
+                padding: "8px 12px", borderRadius: 8,
+                fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif",
+                transition: "all 0.2s", whiteSpace: "nowrap",
+                boxShadow: product.inStock ? "0 3px 10px rgba(37,211,102,0.35)" : "none",
               }}
-              onMouseEnter={e => { if (product.inStock) { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.1)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 16px rgba(37,211,102,0.5)"; }}}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = product.inStock ? "0 4px 12px rgba(37,211,102,0.35)" : "none"; }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              <MessageCircle size={13} />
+              Order
             </button>
           </div>
         </div>
