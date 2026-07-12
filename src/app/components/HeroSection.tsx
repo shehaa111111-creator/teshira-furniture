@@ -52,8 +52,8 @@ export function HeroSection() {
             transform: visible ? "none" : "translateY(22px)",
             transition: "opacity 0.75s ease 0.25s, transform 0.75s ease 0.25s",
           }}>
-            Transform Your<br />
-            <span style={{ color: "#f0d080" }}>Living Space</span>
+            Furniture for<br />
+            <span style={{ color: "#f0d080" }}>every lifestyle</span>
           </h1>
 
           {/* Paragraph */}
