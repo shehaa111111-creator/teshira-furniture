@@ -160,7 +160,7 @@ export function Footer() {
             © {new Date().getFullYear()} Teshira Furniture. All rights reserved.
           </p>
           <p style={{ color: "rgba(255,255,255,0.20)", fontSize: 12 }}>
-            108 De Soysa Rd, Moratuwa 10400, Sri Lanka
+            No. 127, Sri Premarathna Mawatha, Moratumulla, Moratuwa.
           </p>
         </div>
       </div>
