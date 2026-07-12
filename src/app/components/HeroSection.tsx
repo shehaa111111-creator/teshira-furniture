@@ -108,7 +108,7 @@ export function HeroSection() {
             transition: "opacity 0.7s ease 0.7s",
           }}>
             <MapPin size={15} color="rgba(255,255,255,0.60)" />
-            <span>108 De Soysa Rd, Moratuwa 10400, Sri Lanka</span>
+            <span>No. 127, Sri Premarathna Mawatha, Moratumulla, Moratuwa.</span>
           </div>
         </div>
 
