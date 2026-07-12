@@ -2,7 +2,7 @@ import { MapPin, Phone, MessageCircle, Clock, Facebook, Instagram } from "lucide
 import { useReveal } from "./useReveal";
 import teshiraLogo from "../../imports/teshira.jpeg";
 
-const WHATSAPP_NUMBERS = ["94701369029"];
+const WHATSAPP_NUMBERS = ["94701369059", "94701369029"];
 const PRIMARY_WA = WHATSAPP_NUMBERS[0];
 
 export function Footer() {
@@ -133,6 +133,7 @@ export function Footer() {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {[
                 { icon: MapPin, content: "108 De Soysa Rd,\nMoratuwa 10400,\nSri Lanka", href: undefined },
+                { icon: Phone, content: "+94 70 136 9059", href: "tel:+94701369059" },
                 { icon: Phone, content: "+94 70 136 9029", href: "tel:+94701369029" },
                 { icon: MessageCircle, content: "WhatsApp Us", href: `whatsapp://send?phone=${PRIMARY_WA}`, green: true },
                 { icon: Clock, content: "Mon–Sat: 9am – 6pm", href: undefined },
