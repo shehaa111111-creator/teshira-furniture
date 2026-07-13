@@ -132,7 +132,7 @@ export function Footer() {
             <h4 style={{ fontSize: 11, fontWeight: 700, color: "#c9a025", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 22 }}>Visit Us</h4>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {[
-                { icon: MapPin, content: "108 De Soysa Rd,\nMoratuwa 10400,\nSri Lanka", href: undefined },
+                { icon: MapPin, content: "No. 127, Sri Premarathna Mawatha,\Moratumulla, Moratuwa,\nSri Lanka", href: undefined },
                 { icon: Phone, content: "+94 70 136 9059", href: "tel:+94701369059" },
                 { icon: Phone, content: "+94 70 136 9029", href: "tel:+94701369029" },
                 { icon: MessageCircle, content: "WhatsApp Us", href: `whatsapp://send?phone=${PRIMARY_WA}`, green: true },
