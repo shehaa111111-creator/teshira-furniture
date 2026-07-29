@@ -136,7 +136,7 @@ export function Footer() {
                 { icon: Phone, content: "+94 70 136 9059", href: "tel:+94701369059" },
                 { icon: Phone, content: "+94 70 136 9029", href: "tel:+94701369029" },
                 { icon: MessageCircle, content: "WhatsApp Us", href: `whatsapp://send?phone=${PRIMARY_WA}`, green: true },
-                { icon: Clock, content: "Mon–Sat: 9am – 6pm", href: undefined },
+                { icon: Clock, content: "Mon–Sat: 8am – 7pm", href: undefined },
               ].map(({ icon: Icon, content, href, green }: { icon: React.ElementType, content: string, href?: string, green?: boolean }) => (
                 <div key={content} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                   <Icon size={15} color={green ? "#25D366" : "#c9a025"} style={{ flexShrink: 0, marginTop: 2 }} />
