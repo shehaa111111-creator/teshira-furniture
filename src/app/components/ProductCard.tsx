@@ -82,7 +82,7 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
   const handleWhatsApp = () => {
-    const message = encodeURIComponent(`Hello Teshira Furniture! 🛋️\n\nI'm interested in ordering:\n*${product.name}*\nPrice: Rs. ${product.price.toLocaleString()}\n\nCould you please confirm availability and provide any additional details?\n\nThank you!`);
+    const message = encodeURIComponent(`Hello Teshira Furniture! 🛋️\n\nI'm interested in ordering:\n*${product.name}*\n\nCould you please confirm availability and provide any additional details?\n\nThank you!`);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const url = isMobile ? `https://wa.me/${WHATSAPP_NUMBERS[0]}?text=${message}` : `whatsapp://send?phone=${WHATSAPP_NUMBERS[0]}&text=${message}`;
     window.open(url, "_blank");
@@ -134,12 +134,7 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
             <X size={18} color="#64748b" />
           </button>
           <div style={{ display: "inline-block", background: "#eff4ff", color: "#1b3a6b", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 600, marginBottom: 12, alignSelf: "flex-start" }}>Teshira Furniture</div>
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: "#1a1a2e", marginBottom: 12, lineHeight: 1.2 }}>{product.name}</h2>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 24 }}>
-            <Tag size={14} color="#64748b" />
-            <span style={{ fontSize: 13, color: "#64748b" }}>Price</span>
-            <span style={{ fontSize: 28, fontWeight: 900, color: "#1b3a6b", marginLeft: 8 }}>Rs. {product.price.toLocaleString()}</span>
-          </div>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: "#1a1a2e", marginBottom: 24, lineHeight: 1.2 }}>{product.name}</h2>
           <div style={{ background: "#f8faff", borderRadius: 12, padding: "16px 18px", marginBottom: 28, flex: 1 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#1b3a6b", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.5px" }}>Description</div>
             <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.75, margin: 0 }}>{product.description}</p>
@@ -175,7 +170,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const message = encodeURIComponent(`Hello Teshira Furniture! 🛋️\n\nI'm interested in ordering:\n*${product.name}*\nPrice: Rs. ${product.price.toLocaleString()}\n\nCould you please confirm availability and provide any additional details?\n\nThank you!`);
+    const message = encodeURIComponent(`Hello Teshira Furniture! 🛋️\n\nI'm interested in ordering:\n*${product.name}*\n\nCould you please confirm availability and provide any additional details?\n\nThank you!`);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const url = isMobile ? `https://wa.me/${WHATSAPP_NUMBERS[0]}?text=${message}` : `whatsapp://send?phone=${WHATSAPP_NUMBERS[0]}&text=${message}`;
     window.open(url, "_blank");
@@ -195,8 +190,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         <div style={{ padding: "12px 12px 14px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.3, margin: 0 }}>{product.name}</h3>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: "auto" }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#1b3a6b" }}>Rs. {product.price.toLocaleString()}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, marginTop: "auto" }}>
             <button onClick={handleWhatsApp} disabled={!product.inStock}
               style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: "50%", background: product.inStock ? "#25D366" : "#94a3b8", color: "#fff", border: "none", cursor: product.inStock ? "pointer" : "not-allowed", transition: "all 0.2s", flexShrink: 0, boxShadow: product.inStock ? "0 3px 10px rgba(37,211,102,0.35)" : "none" }}
               onMouseEnter={(e) => { if (product.inStock) { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.1)"; }}}
@@ -210,3 +204,4 @@ export function ProductCard({ product }: ProductCardProps) {
     </>
   );
 }
+
