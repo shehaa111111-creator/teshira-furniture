@@ -140,7 +140,7 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
             <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.75, margin: 0 }}>{product.description}</p>
           </div>
           <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 20 }}>
-            <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 14 }}>📦 Order via WhatsApp — fast, easy, no complicated checkout</p>
+            <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 14 }}>Order via WhatsApp — fast, easy, no complicated checkout</p>
             <button onClick={handleWhatsApp} disabled={!product.inStock} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, background: product.inStock ? "#25D366" : "#94a3b8", color: "#fff", border: "none", cursor: product.inStock ? "pointer" : "not-allowed", padding: "16px 24px", borderRadius: 100, fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", boxShadow: product.inStock ? "0 4px 16px rgba(37,211,102,0.4)" : "none", transition: "all 0.2s" }}
               onMouseEnter={(e) => { if (product.inStock) { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.background = "#20c45e"; }}}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "none"; (e.currentTarget as HTMLButtonElement).style.background = product.inStock ? "#25D366" : "#94a3b8"; }}
